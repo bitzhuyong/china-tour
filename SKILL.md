@@ -2,7 +2,7 @@
 ---
 name: china-tour
 displayName: ChinaTour
-version: 1.0.2
+version: 1.1.0
 license: MIT
 description: AI-powered offline tour guide for China's 30+ scenic spots. Personalized routes, photo spots, cultural narration. Bilingual support. 中国景区智能导览助手，支持30+个5A景区，个性化路线推荐、拍照机位、文化讲解，中英双语。
 tags:
@@ -186,11 +186,53 @@ Load data from `references/`:
 
 ---
 
+## API Integration
+
+### Backend API
+
+ChinaTour connects to a backend API for enhanced AI-powered responses:
+
+**API Endpoints**:
+- `POST /api/v1/guide/ask` - AI question answering
+- `GET /api/v1/guide/health` - Health check
+- `GET /api/v1/guide/attractions` - List attractions
+- `GET /api/v1/guide/scenic/:id` - Scenic spot details
+
+**Usage**:
+```python
+from scripts.api_client import ChinaTourClient
+
+client = ChinaTourClient(api_url="http://localhost:3000")
+result = client.ask("故宫开放时间?")
+print(result.answer)
+```
+
+### Fallback Mechanism
+
+When API is unavailable, the skill falls back to local data:
+
+```python
+from scripts.fallback_handler import FallbackHandler
+
+handler = FallbackHandler()
+result = handler.ask("故宫开放时间?")
+# Source will be 'api', 'local', or 'error'
+```
+
+**Fallback Flow**:
+1. Try backend API first
+2. If API fails, use local data from `references/`
+3. Provide meaningful error messages if both fail
+
+---
+
 ## Notes
 
 - Data may be outdated; verify latest info before travel
 - Photo spot lighting suggestions depend on time and season
 - Respect cultural heritage regulations; do not recommend no-photo areas
+- API provides enhanced responses with RAG-powered knowledge
+- Fallback to local data when offline or API unavailable
 
 ---
 
