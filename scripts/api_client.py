@@ -28,7 +28,8 @@ if sys.platform == 'win32':
 
 # ============== Configuration ==============
 
-DEFAULT_API_URL = os.environ.get('CHINATOUR_API_URL', 'http://localhost:3000')
+# 默认 API 地址 - 云服务器
+DEFAULT_API_URL = os.environ.get('CHINATOUR_API_URL', 'http://1.13.252.172:3000')
 DEFAULT_TIMEOUT = int(os.environ.get('CHINATOUR_API_TIMEOUT', '90'))  # 90 seconds
 
 
