@@ -1,0 +1,492 @@
+[
+  {
+    "id": "forbidden-city",
+    "name": "故宫博物院",
+    "name_en": "Forbidden City",
+    "province": "北京",
+    "city": "北京",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 5.0
+  },
+  {
+    "id": "great-wall",
+    "name": "八达岭长城",
+    "name_en": "Badaling Great Wall",
+    "province": "北京",
+    "city": "北京",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 5.0
+  },
+  {
+    "id": "summer-palace",
+    "name": "颐和园",
+    "name_en": "Summer Palace",
+    "province": "北京",
+    "city": "北京",
+    "level": "5A",
+    "category": "皇家园林",
+    "rating": 4.9
+  },
+  {
+    "id": "temple-of-heaven",
+    "name": "天坛公园",
+    "name_en": "Temple of Heaven",
+    "province": "北京",
+    "city": "北京",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.8
+  },
+  {
+    "id": "terracotta-army",
+    "name": "秦始皇兵马俑",
+    "name_en": "Terracotta Army",
+    "province": "陕西",
+    "city": "西安",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 5.0
+  },
+  {
+    "id": "huaqing-palace",
+    "name": "华清宫",
+    "name_en": "Huaqing Palace",
+    "province": "陕西",
+    "city": "西安",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.6
+  },
+  {
+    "id": "dayan-pagoda",
+    "name": "大雁塔",
+    "name_en": "Big Wild Goose Pagoda",
+    "province": "陕西",
+    "city": "西安",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.7
+  },
+  {
+    "id": "west-lake",
+    "name": "西湖",
+    "name_en": "West Lake",
+    "province": "浙江",
+    "city": "杭州",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 5.0
+  },
+  {
+    "id": "qiandao-lake",
+    "name": "千岛湖",
+    "name_en": "Qiandao Lake",
+    "province": "浙江",
+    "city": "杭州",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.7
+  },
+  {
+    "id": "potala-palace",
+    "name": "布达拉宫",
+    "name_en": "Potala Palace",
+    "province": "西藏",
+    "city": "拉萨",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 5.0
+  },
+  {
+    "id": "namtso-lake",
+    "name": "纳木错",
+    "name_en": "Namtso Lake",
+    "province": "西藏",
+    "city": "拉萨",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.9
+  },
+  {
+    "id": "li-river",
+    "name": "漓江",
+    "name_en": "Li River",
+    "province": "广西",
+    "city": "桂林",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.9
+  },
+  {
+    "id": "detian-waterfall",
+    "name": "德天瀑布",
+    "name_en": "Detian Waterfall",
+    "province": "广西",
+    "city": "崇左",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.7
+  },
+  {
+    "id": "wulingyuan",
+    "name": "张家界武陵源",
+    "name_en": "Zhangjiajie Wulingyuan",
+    "province": "湖南",
+    "city": "张家界",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.9
+  },
+  {
+    "id": "phoenix-old-town",
+    "name": "凤凰古城",
+    "name_en": "Phoenix Ancient Town",
+    "province": "湖南",
+    "city": "湘西",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.5
+  },
+  {
+    "id": "yellow-mountain",
+    "name": "黄山",
+    "name_en": "Yellow Mountain",
+    "province": "安徽",
+    "city": "黄山",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 5.0
+  },
+  {
+    "id": "hongcun",
+    "name": "宏村",
+    "name_en": "Hongcun Village",
+    "province": "安徽",
+    "city": "黄山",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.7
+  },
+  {
+    "id": "suzhou-gardens",
+    "name": "苏州园林",
+    "name_en": "Suzhou Classical Gardens",
+    "province": "江苏",
+    "city": "苏州",
+    "level": "5A",
+    "category": "古典园林",
+    "rating": 4.8
+  },
+  {
+    "id": "lijiang-old-town",
+    "name": "丽江古城",
+    "name_en": "Lijiang Old Town",
+    "province": "云南",
+    "city": "丽江",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.6
+  },
+  {
+    "id": "dunhuang-mogao-caves",
+    "name": "敦煌莫高窟",
+    "name_en": "Mogao Caves",
+    "province": "甘肃",
+    "city": "敦煌",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 5.0
+  },
+  {
+    "id": "jiuzhaigou",
+    "name": "九寨沟",
+    "name_en": "Jiuzhaigou Valley",
+    "province": "四川",
+    "city": "阿坝",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 5.0
+  },
+  {
+    "id": "lushan",
+    "name": "庐山",
+    "name_en": "Mount Lu",
+    "province": "江西",
+    "city": "九江",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.7
+  },
+  {
+    "id": "wuyi-mountain",
+    "name": "武夷山",
+    "name_en": "Mount Wuyi",
+    "province": "福建",
+    "city": "南平",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.8
+  },
+  {
+    "id": "yuanmingyuan",
+    "name": "圆明园",
+    "name_en": "Old Summer Palace",
+    "province": "北京",
+    "city": "北京",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.6
+  },
+  {
+    "id": "gongwangfu",
+    "name": "恭王府",
+    "name_en": "Prince Gong's Mansion",
+    "province": "北京",
+    "city": "北京",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.6
+  },
+  {
+    "id": "tai-mountain",
+    "name": "泰山",
+    "name_en": "Mount Tai",
+    "province": "山东",
+    "city": "泰安",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.9
+  },
+  {
+    "id": "emerald-mountain",
+    "name": "峨眉山",
+    "name_en": "Mount Emei",
+    "province": "四川",
+    "city": "乐山",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.8
+  },
+  {
+    "id": "longmen-grottoes",
+    "name": "龙门石窟",
+    "name_en": "Longmen Grottoes",
+    "province": "河南",
+    "city": "洛阳",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.8
+  },
+  {
+    "id": "shaolin-temple",
+    "name": "少林寺",
+    "name_en": "Shaolin Temple",
+    "province": "河南",
+    "city": "郑州",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.6
+  },
+  {
+    "id": "zhangjiajie-grand-canyon",
+    "name": "张家界大峡谷",
+    "name_en": "Zhangjiajie Grand Canyon",
+    "province": "湖南",
+    "city": "张家界",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.7
+  },
+  {
+    "id": "zhujiajiao",
+    "name": "朱家角古镇",
+    "name_en": "Zhujiajiao Water Town",
+    "province": "上海",
+    "city": "上海",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.5
+  },
+  {
+    "id": "zhouzhuang",
+    "name": "周庄古镇",
+    "name_en": "Zhouzhuang Water Town",
+    "province": "江苏",
+    "city": "昆山",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.6
+  },
+  {
+    "id": "wuzhen",
+    "name": "乌镇",
+    "name_en": "Wuzhen Water Town",
+    "province": "浙江",
+    "city": "嘉兴",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.7
+  },
+  {
+    "id": "huangguoshu-waterfall",
+    "name": "黄果树瀑布",
+    "name_en": "Huangguoshu Waterfall",
+    "province": "贵州",
+    "city": "安顺",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.7
+  },
+  {
+    "id": "jiuzhai-huanglong",
+    "name": "黄龙",
+    "name_en": "Huanglong Valley",
+    "province": "四川",
+    "city": "阿坝",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.8
+  },
+  {
+    "id": "emerald-lake",
+    "name": "青海湖",
+    "name_en": "Qinghai Lake",
+    "province": "青海",
+    "city": "青海",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.8
+  },
+  {
+    "id": "kanas-lake",
+    "name": "喀纳斯湖",
+    "name_en": "Kanas Lake",
+    "province": "新疆",
+    "city": "阿勒泰",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.9
+  },
+  {
+    "id": "tianchi",
+    "name": "天山天池",
+    "name_en": "Heavenly Lake",
+    "province": "新疆",
+    "city": "乌鲁木齐",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.7
+  },
+  {
+    "id": "huashan",
+    "name": "华山",
+    "name_en": "Mount Hua",
+    "province": "陕西",
+    "city": "渭南",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.8
+  },
+  {
+    "id": "songshan",
+    "name": "嵩山",
+    "name_en": "Mount Song",
+    "province": "河南",
+    "city": "郑州",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.6
+  },
+  {
+    "id": "heng-mountain",
+    "name": "衡山",
+    "name_en": "Mount Heng",
+    "province": "湖南",
+    "city": "衡阳",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.6
+  },
+  {
+    "id": "heng-mountain-shanxi",
+    "name": "恒山",
+    "name_en": "Mount Heng (Shanxi)",
+    "province": "山西",
+    "city": "大同",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.5
+  },
+  {
+    "id": "pingyao",
+    "name": "平遥古城",
+    "name_en": "Pingyao Ancient City",
+    "province": "山西",
+    "city": "晋中",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.7
+  },
+  {
+    "id": "yungang-grottoes",
+    "name": "云冈石窟",
+    "name_en": "Yungang Grottoes",
+    "province": "山西",
+    "city": "大同",
+    "level": "5A",
+    "category": "历史文化",
+    "rating": 4.8
+  },
+  {
+    "id": "chengde-resort",
+    "name": "承德避暑山庄",
+    "name_en": "Chengde Mountain Resort",
+    "province": "河北",
+    "city": "承德",
+    "level": "5A",
+    "category": "皇家园林",
+    "rating": 4.7
+  },
+  {
+    "id": "beidaihe",
+    "name": "北戴河",
+    "name_en": "Beidaihe",
+    "province": "河北",
+    "city": "秦皇岛",
+    "level": "5A",
+    "category": "海滨度假",
+    "rating": 4.5
+  },
+  {
+    "id": "dalian-beach",
+    "name": "大连金石滩",
+    "name_en": "Dalian Golden Pebble Beach",
+    "province": "辽宁",
+    "city": "大连",
+    "level": "5A",
+    "category": "海滨度假",
+    "rating": 4.6
+  },
+  {
+    "id": "changbai-mountain",
+    "name": "长白山",
+    "name_en": "Changbai Mountain",
+    "province": "吉林",
+    "city": "延边",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.8
+  },
+  {
+    "id": "sun-moon-lake",
+    "name": "日月潭",
+    "name_en": "Sun Moon Lake",
+    "province": "台湾",
+    "city": "南投",
+    "level": "5A",
+    "category": "自然风光",
+    "rating": 4.7
+  }
+]
