@@ -1,9 +1,9 @@
 ---
 name: china-tour
 displayName: ChinaTour
-version: 1.1.0
+version: 1.1.3
 license: MIT
-description: AI-powered offline tour guide for China's 30+ scenic spots. Personalized routes, photo spots, cultural narration. Bilingual support. 中国景区智能导览助手，支持30+个5A景区，个性化路线推荐、拍照机位、文化讲解，中英双语。
+description: AI-powered tour guide with backend API and offline fallback. Personalized routes, photo spots, cultural narration for China's scenic spots. Bilingual support. 中国景区智能导览助手，支持后端API增强与离线备份，个性化路线推荐、拍照机位、文化讲解，中英双语。
 tags:
   - travel
   - china
@@ -15,7 +15,7 @@ tags:
   - photography
   - bilingual
   - route-planning
-  - 5a-scenic-spots
+  - scenic-spots
 ---
 
 # ChinaTour - Smart Tour Guide for China's Scenic Spots
@@ -181,7 +181,7 @@ Load data from `references/`:
 - `culture-stories/[province]/[attraction]-stories.md` - Chinese narration
 - `culture-stories/[province]/[attraction]-stories-en.md` - English narration
 
-**Supported Attractions**: 30+ core 5A-rated scenic spots (Beijing, Xi'an, Hangzhou, Lhasa, Guilin, Zhangjiajie, Huangshan, etc.)
+**Supported Attractions**: Major scenic spots across China, with continuous expansion
 
 ---
 

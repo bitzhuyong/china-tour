@@ -383,7 +383,7 @@ def main():
 
     # 列出所有支持的景区
     if args.list:
-        print("ChinaTour 支持 30 个核心 5A 景区：")
+        print("ChinaTour 支持的景区：")
         print("=" * 50)
         for i, attraction in enumerate(SUPPORTED_ATTRACTIONS, 1):
             print(f"{i:2d}. {attraction}")

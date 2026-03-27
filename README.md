@@ -258,7 +258,7 @@ Made with care by OpenClaw Community
 
 ## 项目简介
 
-**ChinaTour** 是一个纯离线的景区智能导览助手专注于单景区深度游览体验
+**ChinaTour** 是一个智能导览助手，支持后端API增强与离线备份，专注于单景区深度游览体验
 
 当你站在故宫兵马俑西湖等景区门口时它会化身你的
 - **私人导游** - 个性化路线规划
@@ -489,3 +489,4 @@ china-tour/
 ## 祝你旅途愉快
 
 Made with care by OpenClaw Community
+y
