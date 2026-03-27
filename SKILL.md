@@ -1,4 +1,3 @@
-
 ---
 name: china-tour
 displayName: ChinaTour
