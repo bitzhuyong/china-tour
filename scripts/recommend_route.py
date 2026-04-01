@@ -3,7 +3,7 @@
 """
 recommend_route.py - 根据用户画像推荐个性化游览路线
 
-从 references/attractions/ 加载景区数据，根据画像生成个性化路线
+API 唯一数据源，无本地回退。
 
 Usage:
     python recommend_route.py --attraction "forbidden-city" --profile "solo-photographer" --time "14:00"
@@ -17,6 +17,9 @@ import sys
 from typing import Dict, List, Optional
 from datetime import datetime
 
+# 导入 API-First 数据加载器
+from data_loader import APIFirstLoader, ATTRACTION_ID_MAP
+
 # 处理 Windows 控制台编码
 if sys.platform == 'win32':
     import io
@@ -24,45 +27,11 @@ if sys.platform == 'win32':
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 
-# ============== 支持的景区列表（30 个核心 5A 景区）==============
+# ============== 支持的景区列表（从 ATTRACTION_ID_MAP 派生）==============
 
-SUPPORTED_ATTRACTIONS = [
-    # 北京 (6)
-    "forbidden-city", "great-wall", "summer-palace", "temple-of-heaven",
-    "yuanmingyuan", "gongwangfu",
-    # 陕西 (3)
-    "terracotta-army", "huaqing-palace", "dayan-pagoda",
-    # 浙江 (2)
-    "west-lake", "qiandao-lake",
-    # 西藏 (2)
-    "potala-palace", "namtso-lake",
-    # 广西 (2)
-    "li-river", "detian-waterfall",
-    # 湖南 (2)
-    "wulingyuan", "phoenix-old-town",
-    # 安徽 (2)
-    "yellow-mountain", "hongcun",
-    # 甘肃 (1)
-    "dunhuang-mogao-caves",
-    # 四川 (1)
-    "jiuzhaigou",
-    # 云南 (2)
-    "lijiang-old-town", "jade-dragon-snow-mountain",
-    # 江苏 (1)
-    "suzhou-gardens",
-    # 江西 (1)
-    "lushan",
-    # 福建 (1)
-    "wuyi-mountain",
-    # 广东 (1)
-    "danxia-mountain",
-    # 贵州 (1)
-    "huangguoshu-waterfall",
-    # 新疆 (1)
-    "tianchi-lake",
-    # 黑龙江 (1)
-    "jingpo-lake"
-]
+def get_supported_attractions() -> List[str]:
+    """获取所有支持的景区列表"""
+    return list(ATTRACTION_ID_MAP.keys())
 
 
 # ============== 用户画像模板 ==============
@@ -106,21 +75,23 @@ PROFILE_TEMPLATES = {
 }
 
 
-# ============== 景区数据加载 ==============
+# ============== 景区数据加载（API-First）==============
 
-def get_supported_attractions() -> List[str]:
-    """
-    获取所有支持的景区列表
+# 全局数据加载器实例
+_loader: Optional[APIFirstLoader] = None
 
-    Returns:
-        景区英文名列表
-    """
-    return SUPPORTED_ATTRACTIONS
+
+def get_loader() -> APIFirstLoader:
+    """获取或创建数据加载器实例"""
+    global _loader
+    if _loader is None:
+        _loader = APIFirstLoader()
+    return _loader
 
 
 def load_attraction_data(attraction_name: str) -> Optional[Dict]:
     """
-    从 references/attractions/ 加载景区数据
+    加载景区数据 - API 唯一数据源
 
     Args:
         attraction_name: 景区英文名（如 forbidden-city）
@@ -128,130 +99,60 @@ def load_attraction_data(attraction_name: str) -> Optional[Dict]:
     Returns:
         景区数据字典，如加载失败返回 None
     """
-    # 获取脚本所在目录
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # 构建景区文件路径
-    attractions_dir = os.path.join(script_dir, '..', 'references', 'attractions')
+    loader = get_loader()
+    data = loader.get_attraction_data(attraction_name)
 
-    if not os.path.exists(attractions_dir):
+    if not data:
         return None
 
-    # 遍历所有省份目录查找景区文件
-    for province in os.listdir(attractions_dir):
-        province_path = os.path.join(attractions_dir, province)
-        if os.path.isdir(province_path):
-            file_path = os.path.join(province_path, f"{attraction_name}.md")
-            if os.path.exists(file_path):
-                return parse_markdown_file(file_path)
+    # 转换为 recommend_route 期望的格式
+    basic = data.get('basic', {})
+    stories = data.get('stories', [])
 
-    return None
+    # 按景点名分组story，保留L2深度讲解内容
+    spot_stories = {}
+    for story in stories:
+        title = story.get('story_title', '')
+        if not title:
+            continue
+        story_type = story.get('story_type', 'L1')
+        content = story.get('story_content', '')
 
+        if title not in spot_stories:
+            spot_stories[title] = {}
 
-def parse_markdown_file(file_path: str) -> Dict:
-    """
-    解析 Markdown 文件，提取景区信息
+        # 优先用L2，其次L1
+        if story_type == 'L2' or (story_type == 'L1' and 'L2' not in spot_stories[title]):
+            spot_stories[title][story_type] = content
 
-    Args:
-        file_path: Markdown 文件路径
+    # 转换为spots列表，每个spot包含故事内容
+    spots = []
+    for name, story_content in spot_stories.items():
+        # 获取L2或L1内容
+        content = story_content.get('L2') or story_content.get('L1', '')
+        # 截取前200字作为简短介绍
+        short_intro = content[:200] + '...' if len(content) > 200 else content
+        # 计算故事长度（用于排序）
+        story_length = len(story_content.get('L2', '')) or len(story_content.get('L1', ''))
+        spots.append({
+            "name": name,
+            "stay_time": "30 分钟",
+            "story_l2": story_content.get('L2', ''),
+            "story_l1": story_content.get('L1', ''),
+            "short_intro": short_intro,
+            "highlight": "景区景点",
+            "_story_length": story_length  # 用于排序
+        })
 
-    Returns:
-        景区数据字典
-    """
-    data = {
-        "name": "",
-        "basic_info": {},
-        "spots": []
+    # 按故事长度排序（内容越丰富越重要，排在前面的核心景点）
+    spots.sort(key=lambda x: x['_story_length'], reverse=True)
+
+    return {
+        "name": basic.get('name', attraction_name),
+        "basic_info": basic,
+        "spots": spots,
+        "_source": 'api'
     }
-
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-
-        # 提取景区名称
-        for line in lines:
-            line = line.strip()
-            if line.startswith('# '):
-                data["name"] = line.replace('# ', '').split('(')[0].strip()
-                break
-
-        # 提取景点列表（查找主要景点表格）
-        in_spots_table = False
-        for line in lines:
-            line = line.strip()
-
-            # 检测景点表格开始
-            if '| 序号 | 景点 |' in line or '| 1 |' in line:
-                in_spots_table = True
-                continue
-
-            # 检测表格结束
-            if in_spots_table and (line.startswith('---') or line.startswith('###') or line.startswith('## ')):
-                in_spots_table = False
-                continue
-
-            # 提取景点数据
-            if in_spots_table and '|' in line:
-                parts = line.split('|')
-                if len(parts) >= 4:
-                    try:
-                        # 跳过表头
-                        if '景点' in parts[2] or '序号' in parts[1]:
-                            continue
-
-                        spot_name = parts[2].strip()
-                        if spot_name and len(spot_name) > 1:
-                            stay_time = parts[3].strip() if len(parts) > 3 else "30 分钟"
-                            highlight = parts[4].strip() if len(parts) > 4 else "景区亮点"
-
-                            data["spots"].append({
-                                "name": spot_name,
-                                "stay_time": stay_time,
-                                "highlight": highlight
-                            })
-                    except Exception:
-                        pass
-
-        # 如果没有提取到景点，使用默认值
-        if not data["spots"]:
-            data["spots"] = get_default_spots(data["name"])
-
-        return data
-
-    except Exception as e:
-        print(f"Error parsing file: {e}", file=sys.stderr)
-        return data
-
-
-def get_default_spots(name: str) -> List[Dict]:
-    """获取默认景点列表"""
-    if '故宫' in name or 'Forbidden' in name:
-        return [
-            {"name": "午门", "stay_time": "30 分钟", "highlight": "紫禁城正门"},
-            {"name": "太和殿", "stay_time": "40 分钟", "highlight": "皇帝登基大殿"},
-            {"name": "中和殿", "stay_time": "20 分钟", "highlight": "皇帝休息处"},
-            {"name": "保和殿", "stay_time": "25 分钟", "highlight": "科举殿试场所"},
-            {"name": "乾清宫", "stay_time": "30 分钟", "highlight": "皇帝寝宫"}
-        ]
-    elif '长城' in name or 'Great Wall' in name:
-        return [
-            {"name": "关城", "stay_time": "30 分钟", "highlight": "长城起点"},
-            {"name": "北一楼", "stay_time": "20 分钟", "highlight": "俯瞰关城"},
-            {"name": "北四楼", "stay_time": "30 分钟", "highlight": "好汉坡"},
-            {"name": "北八楼", "stay_time": "30 分钟", "highlight": "最高点"}
-        ]
-    elif '西湖' in name or 'West Lake' in name:
-        return [
-            {"name": "断桥", "stay_time": "30 分钟", "highlight": "白蛇传发生地"},
-            {"name": "白堤", "stay_time": "40 分钟", "highlight": "白居易修建"},
-            {"name": "平湖秋月", "stay_time": "30 分钟", "highlight": "中秋赏月"},
-            {"name": "苏堤", "stay_time": "60 分钟", "highlight": "苏轼修建"}
-        ]
-    else:
-        return [
-            {"name": "核心景点 A", "stay_time": "30 分钟", "highlight": "景区亮点"},
-            {"name": "核心景点 B", "stay_time": "30 分钟", "highlight": "必打卡点"},
-            {"name": "核心景点 C", "stay_time": "30 分钟", "highlight": "拍照胜地"}
-        ]
 
 
 # ============== 路线推荐逻辑 ==============
@@ -285,7 +186,8 @@ def recommend_route(attraction_data: Dict, profile_type: str, current_time: str 
         stay_multiplier = 0.8
     elif profile_type == "history-buff":
         # 历史爱好者：选择有历史价值的景点，深度讲解
-        recommended_spots = spots[:6] if len(spots) >= 6 else spots
+        # 排序后内容丰富的在前，取前8个或全部（如果少于8个）
+        recommended_spots = spots[:8] if len(spots) >= 8 else spots
         stay_multiplier = 1.5
     elif profile_type == "quick-visit":
         # 快速游览：只去核心景点
@@ -308,11 +210,18 @@ def recommend_route(attraction_data: Dict, profile_type: str, current_time: str 
         except:
             stay_minutes = 30
 
+        # 根据画像类型决定讲解深度
+        if profile_type == "history-buff":
+            story_content = spot.get('story_l2') or spot.get('story_l1', '')
+        else:
+            story_content = spot.get('story_l1', '')
+
         route.append({
             "spot": spot.get("name", "景点"),
             "stay_minutes": int(stay_minutes * stay_multiplier),
             "photo_tip": f"{spot.get('highlight', '拍照点')}，根据光线调整角度",
             "culture_highlight": spot.get("highlight", "景区亮点"),
+            "story_content": story_content,
             "next_direction": "继续下一站"
         })
 
@@ -332,7 +241,9 @@ def recommend_route(attraction_data: Dict, profile_type: str, current_time: str 
 def format_output(result: Dict) -> str:
     """格式化输出为人类可读格式"""
     if not result or "error" in result:
-        return "抱歉，暂时找不到该景区数据\n支持景区：forbidden-city, great-wall, west-lake 等"
+        return "抱歉，暂时无法获取该景区数据，请检查网络连接后重试"
+
+    is_history_profile = "历史" in result['profile'].get('description', '')
 
     output = []
     output.append(f"{result['attraction']} 个性化路线推荐")
@@ -347,6 +258,17 @@ def format_output(result: Dict) -> str:
     for i, stop in enumerate(result['route'], 1):
         output.append(f"【第{i}站】{stop['spot']}")
         output.append(f"  建议停留：{int(stop['stay_minutes'])} 分钟")
+
+        # 如果有故事内容，输出讲解
+        story = stop.get('story_content', '')
+        if story:
+            if is_history_profile:
+                # 历史爱好者：输出完整L2讲解
+                output.append(f"  讲解：{story}")
+            else:
+                # 其他：输出简短介绍
+                output.append(f"  简介：{stop.get('short_intro', story[:100])}")
+
         output.append(f"  拍照：{stop['photo_tip']}")
         output.append(f"  亮点：{stop['culture_highlight']}")
         output.append(f"  方向：{stop['next_direction']}")
@@ -383,20 +305,23 @@ def main():
 
     # 列出所有支持的景区
     if args.list:
+        supported = get_supported_attractions()
         print("ChinaTour 支持的景区：")
         print("=" * 50)
-        for i, attraction in enumerate(SUPPORTED_ATTRACTIONS, 1):
+        for i, attraction in enumerate(supported, 1):
             print(f"{i:2d}. {attraction}")
         print("=" * 50)
-        print(f"总计：{len(SUPPORTED_ATTRACTIONS)} 个景区")
+        print(f"总计：{len(supported)} 个景区")
         return
 
     # 加载景区数据
     attraction_data = load_attraction_data(args.attraction)
+    supported = get_supported_attractions()
 
     if not attraction_data:
-        print(f"抱歉，找不到景区 '{args.attraction}' 的数据")
-        print(f"支持的景区({len(SUPPORTED_ATTRACTIONS)}个): {', '.join(SUPPORTED_ATTRACTIONS[:10])} ...")
+        print(f"抱歉，暂时无法获取景区 '{args.attraction}' 的数据")
+        print(f"请检查网络连接后重试")
+        print(f"支持的景区({len(supported)}个): {', '.join(supported)}")
         print("使用 --list 参数查看所有支持的景区")
         return
 

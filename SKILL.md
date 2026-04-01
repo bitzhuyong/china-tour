@@ -1,9 +1,9 @@
 ---
 name: china-tour
 displayName: ChinaTour
-version: 1.1.3
+version: 1.2.0
 license: MIT
-description: AI-powered tour guide with backend API and offline fallback. Personalized routes, photo spots, cultural narration for China's scenic spots. Bilingual support. 中国景区智能导览助手，支持后端API增强与离线备份，个性化路线推荐、拍照机位、文化讲解，中英双语。
+description: AI-powered tour guide with backend API. Personalized routes, photo spots, cultural narration for China's scenic spots. Bilingual support. 中国景区智能导览助手，基于后端API，个性化路线推荐、拍照机位、文化讲解，中英双语。
 tags:
   - travel
   - china
@@ -53,7 +53,7 @@ tags:
 ## Core Workflow
 
 1. Identify attraction + collect user profile
-2. Load attraction data from references/
+2. **Use Python scripts for data loading (API-first)**
 3. Recommend personalized route
 4. Step-by-step tour guide (narration + photo spots)
 5. Collect feedback -> dynamic adjustment
@@ -95,6 +95,12 @@ Time budget?
 - history-buff: Deep narration + historical details
 - quick-visit: Highlights + shortest path
 
+**Profile Mapping** (from user's answers):
+- 摄影拍照 → `solo-photographer`
+- 历史文化的深度探索 → `history-buff` (outputs L2 deep narration)
+- 轻松随意逛 → `couple-romantic`
+- 快速打卡精华 → `quick-visit`
+
 ---
 
 ## Reply Format Guidelines
@@ -116,6 +122,24 @@ Do you prefer a slow or quick tour?
 ## Tour Guide Flow
 
 ### Route Recommendation
+After receiving user's profile numbers, follow this order:
+
+**1. Overall Introduction** (ALWAYS include first)
+
+**IMPORTANT**: The route data includes a story with title "[景点名]整体" (e.g., "天坛整体", "故宫整体"). You MUST extract this story and display it as the overall introduction BEFORE the route.
+
+```
+[Attraction Name] · 景区整体介绍
+
+[整体讲解]
+[Extract and display the "整体" story content - this is the L2 deep introduction]
+
+然后问：准备好开始了吗？
+1. 开始导览
+2. 查看具体路线
+```
+
+**2. Personalized Route**
 ```
 [Attraction Name] Personalized Route
 
@@ -175,13 +199,26 @@ Thank you for using ChinaTour!
 
 ## Data Loading
 
-Load data from `references/`:
-- `attractions/[province]/[attraction].md` - Basic attraction info
-- `photo-spots/[province]/[attraction]-spots.md` - Photo spots
-- `culture-stories/[province]/[attraction]-stories.md` - Chinese narration
-- `culture-stories/[province]/[attraction]-stories-en.md` - English narration
+**Architecture: Pure Online (API-Only)**
 
-**Supported Attractions**: Major scenic spots across China, with continuous expansion
+ChinaTour uses the backend API as the sole data source. No local offline data.
+
+**Python Scripts** (use these for data loading):
+
+```bash
+# Generate route using recommend_route.py
+python scripts/recommend_route.py --attraction great-wall --profile history-buff
+
+# Get attraction data
+python -c "from data_loader import APIFirstLoader; print(APIFirstLoader().get_attraction_data('great-wall'))"
+```
+
+**API Endpoints** (used by Python scripts):
+- `GET /api/v1/guide/attraction/:id` - Full attraction data (stories, photo spots, routes)
+- `POST /api/v1/guide/ask` - AI question answering (supports L1/L2/L3 depth)
+- `GET /api/v1/guide/attractions` - List attractions
+
+**Supported Attractions**: All 5A scenic spots (358+) and popular 4A scenic spots (200+)
 
 ---
 
@@ -195,7 +232,7 @@ ChinaTour connects to a backend API for enhanced AI-powered responses:
 - `POST /api/v1/guide/ask` - AI question answering
 - `GET /api/v1/guide/health` - Health check
 - `GET /api/v1/guide/attractions` - List attractions
-- `GET /api/v1/guide/scenic/:id` - Scenic spot details
+- `GET /api/v1/guide/attraction/:id` - Full attraction data
 
 **Usage**:
 ```python
@@ -206,32 +243,15 @@ result = client.ask("故宫开放时间?")
 print(result.answer)
 ```
 
-### Fallback Mechanism
-
-When API is unavailable, the skill falls back to local data:
-
-```python
-from scripts.fallback_handler import FallbackHandler
-
-handler = FallbackHandler()
-result = handler.ask("故宫开放时间?")
-# Source will be 'api', 'local', or 'error'
-```
-
-**Fallback Flow**:
-1. Try backend API first
-2. If API fails, use local data from `references/`
-3. Provide meaningful error messages if both fail
-
 ---
 
 ## Notes
 
-- Data may be outdated; verify latest info before travel
+- Data is always up-to-date from API
 - Photo spot lighting suggestions depend on time and season
 - Respect cultural heritage regulations; do not recommend no-photo areas
 - API provides enhanced responses with RAG-powered knowledge
-- Fallback to local data when offline or API unavailable
+- Fully online architecture - network required
 
 ---
 

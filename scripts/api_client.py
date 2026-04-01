@@ -13,6 +13,7 @@ Usage:
 import asyncio
 import json
 import os
+import re
 import sys
 import time
 import urllib.request
@@ -29,8 +30,10 @@ if sys.platform == 'win32':
 # ============== Configuration ==============
 
 # 默认 API 地址 - 云服务器
-DEFAULT_API_URL = os.environ.get('CHINATOUR_API_URL', 'http://1.13.252.172:3000')
+DEFAULT_API_URL = os.environ.get('CHINATOUR_API_URL', 'http://localhost:3000')
 DEFAULT_TIMEOUT = int(os.environ.get('CHINATOUR_API_TIMEOUT', '90'))  # 90 seconds
+# 统一认证 Token（从环境变量获取，不硬编码）
+CHINATOUR_API_TOKEN = os.environ.get('CHINATOUR_API_TOKEN', '')
 
 
 # ============== Data Classes ==============
@@ -116,6 +119,10 @@ class ChinaTourClient:
         """
         url = f"{self.api_url}{endpoint}"
         headers = {'Content-Type': 'application/json'}
+
+        # 添加 Bearer Token 认证（从环境变量获取，不硬编码）
+        if CHINATOUR_API_TOKEN:
+            headers['Authorization'] = f'Bearer {CHINATOUR_API_TOKEN}'
 
         self._log(f"Request: {method} {url}")
 
@@ -240,6 +247,105 @@ class ChinaTourClient:
             processing_time_ms=meta.get('processing_time_ms', 0)
         )
 
+    def ask_with_fallback(self, question: str, **kwargs) -> AskResult:
+        """
+        Ask question - API first, fallback to local Q&A on failure
+
+        Args:
+            question: User question
+            **kwargs: Arguments passed to ask()
+
+        Returns:
+            AskResult with answer and metadata
+        """
+        # 1. 尝试 API
+        result = self.ask(question, **kwargs)
+        if result.success:
+            return result
+
+        # 2. API 失败，查本地 Q&A 文件
+        import logging
+        logging.warning(f"[ChinaTourClient] API ask failed, trying local Q&A: {result.error}")
+
+        local_answer = self._search_local_qa(question)
+        if local_answer:
+            return AskResult(
+                success=True,
+                answer=local_answer,
+                question=question,
+                language='zh',
+                from_cache=False,
+                sources=[],
+                processing_time_ms=0
+            )
+
+        # 3. 本地也找不到，返回原始错误
+        return result
+
+    def _search_local_qa(self, question: str) -> Optional[str]:
+        """
+        Search local Q&A files for offline fallback
+
+        Args:
+            question: User question
+
+        Returns:
+            Answer string or None if not found
+        """
+        import re
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        qa_dir = os.path.join(script_dir, '..', 'references', 'culture-stories')
+
+        if not os.path.exists(qa_dir):
+            return None
+
+        question_lower = question.lower()
+        keywords = self._extract_keywords(question_lower)
+
+        # 遍历本地文件搜索
+        for province in os.listdir(qa_dir):
+            province_path = os.path.join(qa_dir, province)
+            if not os.path.isdir(province_path):
+                continue
+            for filename in os.listdir(province_path):
+                if not filename.endswith('-stories.md'):
+                    continue
+                file_path = os.path.join(province_path, filename)
+                answer = self._search_in_file(file_path, keywords)
+                if answer:
+                    return answer
+        return None
+
+    def _extract_keywords(self, text: str) -> List[str]:
+        """Extract keywords from question text"""
+        # 去除标点，提取中文/英文词
+        words = re.findall(r'[\u4e00-\u9fa5]+|[a-zA-Z0-9-]+', text)
+        # 过滤停用词
+        stopwords = {'的', '是', '在', '和', '了', '有', '怎么', '如何', '什么', '吗', '呢', '请', '介绍一下'}
+        return [w for w in words if w not in stopwords and len(w) > 1]
+
+    def _search_in_file(self, file_path: str, keywords: List[str]) -> Optional[str]:
+        """Search for keywords in a single file"""
+        import re
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # 支持中英文句号：。和.
+            sentence_end = r'[。.]'
+
+            for keyword in keywords:
+                if keyword.lower() in content.lower():
+                    # 使用负向前瞻匹配包含关键词的完整句子
+                    pattern = f'(?:(?!{sentence_end}).)*{re.escape(keyword)}(?:(?!{sentence_end}).)*{sentence_end}'
+                    match = re.search(pattern, content)
+                    if match:
+                        return match.group(0)
+            return None
+        except Exception:
+            return None
+
     def health_check(self) -> HealthResult:
         """
         Check API health status
@@ -330,6 +436,25 @@ class ChinaTourClient:
 
         return response.get('data')
 
+    def get_attraction_data(self, attraction_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Get attraction full data (includes basic, stories, photoSpots, routes)
+
+        Args:
+            attraction_id: Attraction ID
+
+        Returns:
+            Attraction data dict or None if not found
+        """
+        self._log(f"Get attraction data: id={attraction_id}")
+
+        response = self._make_request(f'/api/v1/guide/attraction/{attraction_id}', 'GET')
+
+        if not response.get('success'):
+            return None
+
+        return response.get('data')
+
     def quick_ask(self, question: str, language: str = 'auto') -> str:
         """
         Quick ask - returns just the answer string
@@ -391,6 +516,7 @@ def main():
     ask_parser.add_argument('question', help='Question to ask')
     ask_parser.add_argument('--attraction-id', type=int, help='Attraction ID')
     ask_parser.add_argument('--language', default='auto', choices=['auto', 'zh', 'en'], help='Language')
+    ask_parser.add_argument('--depth', default='L2', choices=['L1', 'L2', 'L3'], help='Response depth')
     ask_parser.add_argument('--no-cache', action='store_true', help='Disable cache')
 
     # Health command
@@ -405,6 +531,10 @@ def main():
     scenic_parser = subparsers.add_parser('scenic', help='Get scenic info')
     scenic_parser.add_argument('id', type=int, help='Scenic ID')
 
+    # Attraction command (new - Step 0)
+    attraction_parser = subparsers.add_parser('attraction', help='Get attraction full data')
+    attraction_parser.add_argument('id', type=int, help='Attraction ID')
+
     args = parser.parse_args()
 
     client = ChinaTourClient(
@@ -418,6 +548,7 @@ def main():
             question=args.question,
             attraction_id=args.attraction_id,
             language=args.language,
+            depth=args.depth,
             use_cache=not args.no_cache
         )
 
@@ -457,6 +588,21 @@ def main():
             print(json.dumps(scenic, ensure_ascii=False, indent=2))
         else:
             print(f"Scenic spot not found: {args.id}")
+
+    elif args.command == 'attraction':
+        data = client.get_attraction_data(args.id)
+        if data:
+            print(f"\nAttraction Data:")
+            print(f"Basic: {data.get('basic', {}).get('name', 'N/A')}")
+            print(f"Stories: {len(data.get('stories', []))} items")
+            print(f"Photo Spots: {len(data.get('photoSpots', []))} items")
+            print(f"Routes: {len(data.get('routes', []))} items")
+            if data.get('stories'):
+                print("\nFirst story:")
+                s = data['stories'][0]
+                print(f"  [{s.get('story_type')}] {s.get('story_title')}: {s.get('story_content', '')[:100]}...")
+        else:
+            print(f"Attraction not found: {args.id}")
 
     else:
         parser.print_help()
